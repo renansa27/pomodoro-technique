@@ -1,0 +1,12 @@
+.clickableText {
+  color: var(--text-over-secondary);
+  text-decoration: none;
+  outline-color: var(--text-over-secondary);
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin-top: 1.6rem;
+}
+
+.clickableText:hover {
+  text-decoration: underline;
+}
