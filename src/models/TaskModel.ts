@@ -3,7 +3,7 @@ import type { TaskStateModel } from "./TaskStateModel";
 export type TaskModel = {
   id: string;
   title: string;
-  durationInMinutes: string;
+  durationInMinutes: number;
   startAt: number;
   completedAt: number | null; // quando o times chegar ao final, o valor será o timestamp da data de término. Caso o usuário interompa o tempo, o valor será null.
   interruptedAt: number | null; // quando o usuário interrompe o tempo, o valor será o timestamp da data de interrupção. Caso o usuário não interrompa o tempo, o valor será null.
