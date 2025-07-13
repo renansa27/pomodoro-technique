@@ -6,11 +6,11 @@ const initialState: TaskStateModel = {
   secondsRemaining: 0,
   formattedSecondsRemaining: "00:00",
   activeTask: null,
-  currentCycle: 0,
+  currentCycle: 0, // 1,2,3... 8 => 1
   config: {
-    workTime: 25,
-    shortBreakTime: 5,
-    longBreakTime: 15,
+    workTime: 0.1, // 25 minutos
+    shortBreakTime: 0.1, // 5 minutos
+    longBreakTime: 0.1, // 15 minutos
   },
 };
 
