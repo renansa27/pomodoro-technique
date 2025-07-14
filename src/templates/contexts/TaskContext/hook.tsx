@@ -2,6 +2,9 @@ import { useContext, useEffect, useState, useCallback } from "react";
 import { TaskContext } from "./context";
 import { formartSecondsToMinutes } from "../../../utils/formartSecondsToMinutes";
 import type { TaskModel } from "../../../models/TaskModel";
+import alarmSound from "../../../assets/sounds/funny-alarm.mp3";
+
+const audio = new Audio(alarmSound);
 
 // Hook para acessar o contexto de tasks
 export function useTaskContext() {
@@ -41,15 +44,34 @@ export function getNextCycleType(currentCycle: number): TaskModel["type"] {
   return "workTime";
 }
 
+// Função para obter o tempo em segundos para a próxima task
+export function useNextTaskSeconds() {
+  const { state } = useTaskContext();
+
+  const totalCycles = 8;
+  const nextCycle = getNextCycleIndex(state.currentCycle, totalCycles);
+  const nextCycleType = getNextCycleType(nextCycle);
+  const seconds = Math.floor(Number(state.config[nextCycleType]) * 60);
+
+  return seconds;
+}
+
 // Hook para centralizar ações de manipulação de tasks
 export function useTaskActions() {
   const { state, setState } = useTaskContext();
 
+  const totalCycles = 8;
+  const nextCycle = getNextCycleIndex(state.currentCycle, totalCycles);
+  const nextCycleType = getNextCycleType(nextCycle);
+  const nextCycleTime = state.config[nextCycleType];
+  //const { setCountdown } = useStartCountdown();
+
   // Cria uma nova task e avança o ciclo
   const createTask = (taskName: string) => {
-    const totalCycles = 8;
-    const nextCycle = getNextCycleIndex(state.currentCycle, totalCycles);
-    const nextCycleType = getNextCycleType(nextCycle);
+    // Zera o array tasks se o total de ciclos for atingido
+    if (state.tasks.length >= totalCycles) {
+      setState((prevState) => ({ ...prevState, tasks: [] }));
+    }
 
     const newTask: TaskModel = {
       id: crypto.randomUUID(),
@@ -60,20 +82,18 @@ export function useTaskActions() {
       durationInMinutes: state.config[nextCycleType],
       type: nextCycleType,
     };
-
-    const secondsRemaining = newTask.durationInMinutes * 60;
+    const secondsRemaining = Math.floor(Number(newTask.durationInMinutes) * 60);
 
     setState((prevState) => ({
       ...prevState,
+      config: { ...prevState.config },
       activeTask: newTask,
       currentCycle: nextCycle,
       secondsRemaining,
       formattedSecondsRemaining: formartSecondsToMinutes(secondsRemaining),
-      tasks:
-        prevState.tasks.length >= totalCycles
-          ? [newTask]
-          : [...prevState.tasks, newTask],
+      tasks: [...prevState.tasks, newTask],
     }));
+    //setCountdown(secondsRemaining);
   };
 
   // Interrompe a task ativa
@@ -88,7 +108,13 @@ export function useTaskActions() {
     }));
   };
 
-  return { createTask, interruptTask };
+  return { createTask, interruptTask, nextCycleType, nextCycleTime };
+}
+
+// Pega o valor atualizado da variavel formattedSecondsRemaining da task ativa sempre que o state for atualizado
+export function useGetUpdatedFormattedSecondsRemaining() {
+  const { state } = useTaskContext();
+  return state.formattedSecondsRemaining;
 }
 
 // Hook para interromper a task ativa
@@ -157,6 +183,9 @@ export function useStartCountdown() {
       }, 1000);
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
+      audio.play().catch((error) => {
+        console.error("Erro ao tocar o som:", error);
+      });
       stopCountdown();
     }
   }, [
