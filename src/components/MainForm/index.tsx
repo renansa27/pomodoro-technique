@@ -32,11 +32,6 @@ export default function MainForm() {
     setCountdown(nextTaskSeconds);
   }
 
-  function handleInterruptTask(e: React.MouseEvent<HTMLButtonElement>) {
-    e.preventDefault();
-    interruptTask();
-  }
-
   return (
     <form className="form" onSubmit={handleCreateNewTask} action="">
       <div className="formRow">
@@ -47,10 +42,11 @@ export default function MainForm() {
           type="text"
           placeholder="Digite o título da task"
           ref={TaskNameInput}
+          isCurrentTaskActive={!!state.activeTask}
         />
       </div>
       <FocusTimeLabel
-        isActive={state.activeTask?.interruptedAt == null}
+        isActive={isCurrentTaskActive}
         nextCycleTime={nextCycleTime}
         action={state.activeTask?.type === "workTime" ? "Foque" : "Descanse"}
         time={state.activeTask?.durationInMinutes || 0}
@@ -61,10 +57,15 @@ export default function MainForm() {
           icon={<StopCircle />}
           color="red"
           type="button"
-          onClick={handleInterruptTask}
+          onClick={interruptTask}
+          key="interrupt_task_button"
         />
       ) : (
-        <CommonButton icon={<CirclePlay />} type="submit" />
+        <CommonButton
+          icon={<CirclePlay />}
+          type="submit"
+          key="start_task_button"
+        />
       )}
     </form>
   );
